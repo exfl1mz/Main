@@ -1,0 +1,213 @@
+local ExistingGUI = game:GetService("CoreGui"):FindFirstChild("ProxiInfo")
+if ExistingGUI then
+	ExistingGUI:Destroy()
+end
+
+local GUI = Instance.new("ScreenGui")
+GUI.Name = "ProxiInfo"
+GUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+GUI.Parent = game:GetService("CoreGui")
+
+function Create(instance, properties, children)
+	local obj = Instance.new(instance)
+	for i, v in pairs(properties or {}) do
+		obj[i] = v 
+		for _, child in pairs(children or {}) do
+			child.Parent = obj;
+		end
+	end
+	return obj;
+end
+
+local MainFrame = Create("Frame", {
+	BorderSizePixel = 0,
+	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+	AnchorPoint = Vector2.new(0.5, 0.5),
+	Size = UDim2.new(0, 450, 0, 390),
+	Position = UDim2.new(0.5, 0, 0.5, 0),
+	Parent = GUI
+}, {
+	Create("UIScale", {}),
+	Create("UICorner", { CornerRadius = UDim.new(0, 16) })
+})
+
+local TopFrame = Create("Frame", {
+	SizeConstraint = Enum.SizeConstraint.RelativeXX,
+	BorderSizePixel = 0,
+	BackgroundColor3 = Color3.fromRGB(0, 0, 255),
+	Size = UDim2.new(1, 0, 0, 50),
+	Parent = MainFrame
+}, {
+	Create("UIPadding", {
+		PaddingTop = UDim.new(0, 20),
+		PaddingRight = UDim.new(0, 30),
+		PaddingLeft = UDim.new(0, 25),
+		PaddingBottom = UDim.new(0, 20)
+	})
+})
+
+Create("TextLabel", {
+	TextWrapped = true,
+	BorderSizePixel = 0,
+	TextSize = 14,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextScaled = true,
+	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Heavy, Enum.FontStyle.Normal),
+	TextColor3 = Color3.fromRGB(255, 255, 255),
+	BackgroundTransparency = 1,
+	AnchorPoint = Vector2.new(0, 0.5),
+	Size = UDim2.new(0, 0, 0, 22),
+	Text = "PROXIMITY INFO",
+	AutomaticSize = Enum.AutomaticSize.X,
+	Position = UDim2.new(0, 0, 0.5, 0),
+	Parent = TopFrame
+}, {
+	Create("TextLabel", {
+		BorderSizePixel = 0,
+		TextSize = 13,
+		BackgroundColor3 = Color3.fromRGB(253, 61, 61),
+		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Heavy, Enum.FontStyle.Normal),
+		TextColor3 = Color3.fromRGB(255, 255, 255),
+		AnchorPoint = Vector2.new(0, 0.5),
+		Text = "NEW",
+		AutomaticSize = Enum.AutomaticSize.XY,
+		Position = UDim2.new(1, 5, 0.5, 0)
+	}, {
+		Create("UIPadding", {
+			PaddingTop = UDim.new(0, 6),
+			PaddingRight = UDim.new(0, 6),
+			PaddingLeft = UDim.new(0, 6),
+			PaddingBottom = UDim.new(0, 6)
+		}),
+		Create("UICorner", { CornerRadius = UDim.new(1, 0) })
+	})
+})
+
+local Buttons = Create("Frame", {
+	BorderSizePixel = 0,
+	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+	AnchorPoint = Vector2.new(1, 0.5),
+	Size = UDim2.new(0.5, 0, 0, 26),
+	Position = UDim2.new(1, 15, 0.5, 0),
+	BackgroundTransparency = 1,
+	Parent = TopFrame
+}, {
+	Create("UIListLayout", {
+		HorizontalAlignment = Enum.HorizontalAlignment.Right,
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		FillDirection = Enum.FillDirection.Horizontal
+	}),
+	Create("ImageButton", {
+		ScaleType = Enum.ScaleType.Fit,
+		BackgroundTransparency = 1,
+		ZIndex = 2,
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		Image = "rbxassetid://14829181141",
+		Size = UDim2.new(1, 0, 1, 0),
+		BorderColor3 = Color3.fromRGB(28, 43, 54),
+		Name = "Close",
+		Position = UDim2.new(1, 0, 0.5, 0)
+	}, {
+		Create("UIAspectRatioConstraint", {})
+	})
+})
+
+Buttons.Close.MouseButton1Click:Connect(function()
+	GUI:Destroy()
+end)
+
+local ScrollFrame = Create("ScrollingFrame", {
+	ScrollingDirection = Enum.ScrollingDirection.Y,
+	ZIndex = 2,
+	BorderSizePixel = 0,
+	CanvasSize = UDim2.new(0, 0, 0, 0),
+	HorizontalScrollBarInset = Enum.ScrollBarInset.Always,
+	ElasticBehavior = Enum.ElasticBehavior.Always,
+	TopImage = "rbxassetid://14558035053",
+	Name = "Frame",
+	ScrollBarImageTransparency = 0.5,
+	BackgroundColor3 = Color3.fromRGB(255, 255, 245),
+	MidImage = "rbxassetid://14558030992",
+	Selectable = false,
+	BottomImage = "rbxassetid://14558036860",
+	Size = UDim2.new(1, 0, 0, 338),
+	ScrollBarImageColor3 = Color3.fromRGB(255, 0, 133),
+	Position = UDim2.new(0, 0, 0, 50),
+	BorderColor3 = Color3.fromRGB(0, 0, 0),
+	ScrollBarThickness = 8,
+	LayoutOrder = 1,
+	BackgroundTransparency = 1,
+	Parent = MainFrame
+}, {
+	Create("UIListLayout", {
+		Padding = UDim.new(0, 12),
+		SortOrder = Enum.SortOrder.LayoutOrder
+	}),
+	Create("UIPadding", {
+		PaddingTop = UDim.new(0, 15),
+		PaddingRight = UDim.new(0, 25),
+		PaddingLeft = UDim.new(0, 25),
+		PaddingBottom = UDim.new(0, 15)
+	})
+})
+
+Create("TextLabel", {
+	TextWrapped = true,
+	BorderSizePixel = 0,
+	TextSize = 19,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextYAlignment = Enum.TextYAlignment.Top,
+	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+	FontFace = Font.new("rbxasset://16658221428", Enum.FontWeight.Bold, Enum.FontStyle.Normal),
+	TextColor3 = Color3.fromRGB(18, 37, 100),
+	BackgroundTransparency = 1,
+	RichText = true,
+	AnchorPoint = Vector2.new(0, 0.5),
+	Size = UDim2.new(1, 0, 0, 56),
+	Text = '<font transparency="0.3"><b>Proxi Sniper</b></font>\nAutomatically clicks the nearest ProximityPrompt when your specified UGC item is for sale.',
+	LayoutOrder = 3,
+	Name = "Description",
+	Position = UDim2.new(0, 0, 0.5, 0),
+	Parent = ScrollFrame
+})
+
+Create("TextLabel", {
+	TextWrapped = true,
+	BorderSizePixel = 0,
+	TextSize = 19,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextYAlignment = Enum.TextYAlignment.Top,
+	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+	FontFace = Font.new("rbxasset://16658221428", Enum.FontWeight.Bold, Enum.FontStyle.Normal),
+	TextColor3 = Color3.fromRGB(18, 37, 100),
+	BackgroundTransparency = 1,
+	RichText = true,
+	AnchorPoint = Vector2.new(0, 0.5),
+	Size = UDim2.new(1, 0, 0, 100),
+	Text = '<font transparency="0.3"><b>How it Works</b></font>\nEnter the Item ID of the UGC item you want to snipe. The script checks if the item is currently for sale in the game. If it is, it automatically triggers the closest available ProximityPrompt to buy it.',
+	LayoutOrder = 3,
+	Name = "Description",
+	Position = UDim2.new(0, 0, 0.5, 0),
+	Parent = ScrollFrame
+})
+
+Create("TextLabel", {
+	TextWrapped = true,
+	BorderSizePixel = 0,
+	TextSize = 19,
+	TextXAlignment = Enum.TextXAlignment.Left,
+	TextYAlignment = Enum.TextYAlignment.Top,
+	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+	FontFace = Font.new("rbxasset://16658221428", Enum.FontWeight.Bold, Enum.FontStyle.Normal),
+	TextColor3 = Color3.fromRGB(18, 37, 100),
+	BackgroundTransparency = 1,
+	RichText = true,
+	AnchorPoint = Vector2.new(0, 0.5),
+	Size = UDim2.new(1, 0, 0, 100),
+	Text = '<font transparency="0.3"><b>Settings</b></font>\nThe script constantly checks the item\'s availability. Once detected, it rapidly interacts with nearby prompts to secure your purchase.',
+	LayoutOrder = 3,
+	Name = "Description",
+	Position = UDim2.new(0, 0, 0.5, 0),
+	Parent = ScrollFrame
+})
