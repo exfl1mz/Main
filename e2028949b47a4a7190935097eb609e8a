@@ -23,12 +23,21 @@ local MainFrame = Create("Frame", {
 	BorderSizePixel = 0,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	AnchorPoint = Vector2.new(0.5, 0.5),
-	Size = UDim2.new(0, 450, 0, 390),
+	Size = UDim2.new(0.45, 0, 0.55, 0),
 	Position = UDim2.new(0.5, 0, 0.5, 0),
 	Parent = GUI
 }, {
 	Create("UIScale", {}),
-	Create("UICorner", { CornerRadius = UDim.new(0, 16) })
+	Create("UICorner", { CornerRadius = UDim.new(0, 16) }),
+	Create("UIAspectRatioConstraint", {
+		AspectRatio = 1.15,
+		AspectType = Enum.AspectType.FitWithinMaxSize,
+		DominantAxis = Enum.DominantAxis.Height
+	}),
+	Create("UISizeConstraint", {
+		MinSize = Vector2.new(350, 300),
+		MaxSize = Vector2.new(500, 450)
+	})
 })
 
 local TopFrame = Create("Frame", {
@@ -131,7 +140,7 @@ local ScrollFrame = Create("ScrollingFrame", {
 	MidImage = "rbxassetid://14558030992",
 	Selectable = false,
 	BottomImage = "rbxassetid://14558036860",
-	Size = UDim2.new(1, 0, 0, 338),
+	Size = UDim2.new(1, 0, 1, -50),
 	ScrollBarImageColor3 = Color3.fromRGB(255, 0, 133),
 	Position = UDim2.new(0, 0, 0, 50),
 	BorderColor3 = Color3.fromRGB(0, 0, 0),
