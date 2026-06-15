@@ -8,8 +8,8 @@ GUI.Name = "ProxiConfirm"
 GUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 GUI.Parent = game:GetService("CoreGui")
 
-local function Create(className, properties, children)
-    local obj = Instance.new(className)
+local function Create(instance, properties, children)
+    local obj = Instance.new(instance)
     for prop, val in pairs(properties or {}) do
         obj[prop] = val
     end
