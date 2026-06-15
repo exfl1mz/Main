@@ -23,73 +23,61 @@ local MainFrame = Create("Frame", {
 	BorderSizePixel = 0,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	AnchorPoint = Vector2.new(0.5, 0.5),
-	Size = UDim2.new(0, 450, 0, 390),
+	Size = UDim2.new(0.45, 0, 0.6, 0),
 	Position = UDim2.new(0.5, 0, 0.5, 0),
 	Parent = GUI
 }, {
 	Create("UIScale", {}),
-	Create("UICorner", { CornerRadius = UDim.new(0, 16) })
+	Create("UICorner", { CornerRadius = UDim.new(0, 16) }),
+	Create("UIAspectRatioConstraint", {
+		AspectRatio = 1.15,
+		AspectType = Enum.AspectType.FitWithinMaxSize,
+		DominantAxis = Enum.DominantAxis.Height
+	}),
+	Create("UISizeConstraint", {
+		MinSize = Vector2.new(350, 350),
+		MaxSize = Vector2.new(500, 500)
+	})
 })
 
 local TopFrame = Create("Frame", {
 	SizeConstraint = Enum.SizeConstraint.RelativeXX,
 	BorderSizePixel = 0,
 	BackgroundColor3 = Color3.fromRGB(0, 0, 255),
-	Size = UDim2.new(1, 0, 0, 50),
+	Size = UDim2.new(1, 0, 0.13, 0),
 	Parent = MainFrame
 }, {
 	Create("UIPadding", {
-		PaddingTop = UDim.new(0, 20),
+		PaddingTop = UDim.new(0, 15),
 		PaddingRight = UDim.new(0, 30),
 		PaddingLeft = UDim.new(0, 25),
-		PaddingBottom = UDim.new(0, 20)
+		PaddingBottom = UDim.new(0, 15)
 	})
 })
 
 Create("TextLabel", {
 	TextWrapped = true,
 	BorderSizePixel = 0,
-	TextSize = 14,
+	TextSize = 16,
 	TextXAlignment = Enum.TextXAlignment.Left,
-	TextScaled = true,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Heavy, Enum.FontStyle.Normal),
 	TextColor3 = Color3.fromRGB(255, 255, 255),
 	BackgroundTransparency = 1,
 	AnchorPoint = Vector2.new(0, 0.5),
-	Size = UDim2.new(0, 0, 0, 22),
-	Text = "PROXIMITY INFO",
+	Size = UDim2.new(0, 0, 1, 0),
+	Text = "PROMPT SNIPER",
 	AutomaticSize = Enum.AutomaticSize.X,
 	Position = UDim2.new(0, 0, 0.5, 0),
 	Parent = TopFrame
-}, {
-	Create("TextLabel", {
-		BorderSizePixel = 0,
-		TextSize = 13,
-		BackgroundColor3 = Color3.fromRGB(253, 61, 61),
-		FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Heavy, Enum.FontStyle.Normal),
-		TextColor3 = Color3.fromRGB(255, 255, 255),
-		AnchorPoint = Vector2.new(0, 0.5),
-		Text = "NEW",
-		AutomaticSize = Enum.AutomaticSize.XY,
-		Position = UDim2.new(1, 5, 0.5, 0)
-	}, {
-		Create("UIPadding", {
-			PaddingTop = UDim.new(0, 6),
-			PaddingRight = UDim.new(0, 6),
-			PaddingLeft = UDim.new(0, 6),
-			PaddingBottom = UDim.new(0, 6)
-		}),
-		Create("UICorner", { CornerRadius = UDim.new(1, 0) })
-	})
 })
 
 local Buttons = Create("Frame", {
 	BorderSizePixel = 0,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	AnchorPoint = Vector2.new(1, 0.5),
-	Size = UDim2.new(0.5, 0, 0, 26),
-	Position = UDim2.new(1, 15, 0.5, 0),
+	Size = UDim2.new(0.5, 0, 1, 0),
+	Position = UDim2.new(1, 0.0375, 0.5, 0),
 	BackgroundTransparency = 1,
 	Parent = TopFrame
 }, {
@@ -131,9 +119,9 @@ local ScrollFrame = Create("ScrollingFrame", {
 	MidImage = "rbxassetid://14558030992",
 	Selectable = false,
 	BottomImage = "rbxassetid://14558036860",
-	Size = UDim2.new(1, 0, 0, 338),
+	Size = UDim2.new(1, 0, 0.87, 0),
 	ScrollBarImageColor3 = Color3.fromRGB(255, 0, 133),
-	Position = UDim2.new(0, 0, 0, 50),
+	Position = UDim2.new(0, 0, 0.13, 0),
 	BorderColor3 = Color3.fromRGB(0, 0, 0),
 	ScrollBarThickness = 8,
 	LayoutOrder = 1,
@@ -155,7 +143,7 @@ local ScrollFrame = Create("ScrollingFrame", {
 Create("TextLabel", {
 	TextWrapped = true,
 	BorderSizePixel = 0,
-	TextSize = 19,
+	TextSize = 16,
 	TextXAlignment = Enum.TextXAlignment.Left,
 	TextYAlignment = Enum.TextYAlignment.Top,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -164,8 +152,8 @@ Create("TextLabel", {
 	BackgroundTransparency = 1,
 	RichText = true,
 	AnchorPoint = Vector2.new(0, 0.5),
-	Size = UDim2.new(1, 0, 0, 56),
-	Text = '<font transparency="0.3"><b>Proxi Sniper</b></font>\nAutomatically clicks the nearest ProximityPrompt when your specified UGC item is for sale.',
+	Size = UDim2.new(1, 0, 0, 50),
+	Text = '<font transparency="0.3"><b>Prompt Sniper</b></font>\nAuto-clicks ProximityPrompt or ClickDetector when UGC is for sale.',
 	LayoutOrder = 3,
 	Name = "Description",
 	Position = UDim2.new(0, 0, 0.5, 0),
@@ -175,7 +163,7 @@ Create("TextLabel", {
 Create("TextLabel", {
 	TextWrapped = true,
 	BorderSizePixel = 0,
-	TextSize = 19,
+	TextSize = 16,
 	TextXAlignment = Enum.TextXAlignment.Left,
 	TextYAlignment = Enum.TextYAlignment.Top,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -184,8 +172,8 @@ Create("TextLabel", {
 	BackgroundTransparency = 1,
 	RichText = true,
 	AnchorPoint = Vector2.new(0, 0.5),
-	Size = UDim2.new(1, 0, 0, 100),
-	Text = '<font transparency="0.3"><b>How it Works</b></font>\nEnter the Item ID of the UGC item you want to snipe. The script checks if the item is currently for sale in the game. If it is, it automatically triggers the closest available ProximityPrompt to buy it.',
+	Size = UDim2.new(1, 0, 0, 80),
+	Text = '<font transparency="0.3"><b>How it Works</b></font>\nEnter Item ID. Script checks availability and triggers nearby prompts automatically.',
 	LayoutOrder = 3,
 	Name = "Description",
 	Position = UDim2.new(0, 0, 0.5, 0),
@@ -195,7 +183,7 @@ Create("TextLabel", {
 Create("TextLabel", {
 	TextWrapped = true,
 	BorderSizePixel = 0,
-	TextSize = 19,
+	TextSize = 16,
 	TextXAlignment = Enum.TextXAlignment.Left,
 	TextYAlignment = Enum.TextYAlignment.Top,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -204,8 +192,8 @@ Create("TextLabel", {
 	BackgroundTransparency = 1,
 	RichText = true,
 	AnchorPoint = Vector2.new(0, 0.5),
-	Size = UDim2.new(1, 0, 0, 100),
-	Text = '<font transparency="0.3"><b>Settings</b></font>\nThe script constantly checks the item\'s availability. Once detected, it rapidly interacts with nearby prompts to secure your purchase.',
+	Size = UDim2.new(1, 0, 0, 80),
+	Text = '<font transparency="0.3"><b>Methods</b></font>\nChoose ProximityPrompt or ClickDetector. Stays within 15 studs range.',
 	LayoutOrder = 3,
 	Name = "Description",
 	Position = UDim2.new(0, 0, 0.5, 0),
