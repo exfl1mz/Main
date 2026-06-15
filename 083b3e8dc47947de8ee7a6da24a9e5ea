@@ -52,10 +52,10 @@ local TopFrame = Create("Frame", {
 	Parent = MainFrame
 }, {
 	Create("UIPadding", {
-		PaddingTop = UDim.new(0.24, 0),
-		PaddingRight = UDim.new(0.075, 0),
-		PaddingLeft = UDim.new(0.075, 0),
-		PaddingBottom = UDim.new(0.24, 0)
+		PaddingTop = UDim.new(0, 12),
+		PaddingRight = UDim.new(0, 30),
+		PaddingLeft = UDim.new(0, 30),
+		PaddingBottom = UDim.new(0, 12)
 	}),
 	Create("UIStroke", { Color = Color3.fromRGB(231, 231, 231) })
 })
@@ -94,15 +94,14 @@ local Buttons = Create("Frame", {
 Create("TextLabel", {
 	TextWrapped = true,
 	BorderSizePixel = 0,
-	TextSize = 14,
+	TextSize = 16,
 	TextXAlignment = Enum.TextXAlignment.Left,
-	TextScaled = true,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Heavy, Enum.FontStyle.Normal),
 	TextColor3 = Color3.fromRGB(16, 34, 60),
 	BackgroundTransparency = 1,
 	AnchorPoint = Vector2.new(0, 0.5),
-	Size = UDim2.new(0, 0, 0.44, 0),
+	Size = UDim2.new(0, 0, 1, 0),
 	AutomaticSize = Enum.AutomaticSize.X,
 	Name = "Title",
 	Position = UDim2.new(0, 0, 0.5, 0),
