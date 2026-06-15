@@ -237,6 +237,6 @@ local function ShowConfirmation(assetId, callback)
 	end
 end
 
-GUI.Enabled = true
+GUI.Enabled = false
 
 return ShowConfirmation
