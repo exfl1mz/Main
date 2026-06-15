@@ -64,7 +64,7 @@ local Buttons = Create("Frame", {
 	BorderSizePixel = 0,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	AnchorPoint = Vector2.new(1, 0.5),
-	Size = UDim2.new(0.5, 0, 0.52, 0),
+	Size = UDim2.new(0.5, 0, 1, 0),
 	Position = UDim2.new(1, 0.0375, 0.5, 0),
 	BackgroundTransparency = 1,
 	Parent = TopFrame
@@ -94,7 +94,7 @@ local Buttons = Create("Frame", {
 Create("TextLabel", {
 	TextWrapped = true,
 	BorderSizePixel = 0,
-	TextSize = 16,
+	TextSize = 18,
 	TextXAlignment = Enum.TextXAlignment.Left,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	FontFace = Font.new("rbxasset://fonts/families/GothamSSm.json", Enum.FontWeight.Heavy, Enum.FontStyle.Normal),
