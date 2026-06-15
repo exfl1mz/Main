@@ -131,7 +131,7 @@ local ImageLabel = Create("ImageLabel", {
 	BorderSizePixel = 0,
 	ScaleType = Enum.ScaleType.Fit,
 	BackgroundColor3 = Color3.fromRGB(0, 0, 255),
-	Image = "rbxassetid://18306979248",
+	Image = "rbxassetid://1234567890",
 	Size = UDim2.new(1, 0, 0.7, 0),
 	Parent = ContentFrame
 }, {
