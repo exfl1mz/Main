@@ -23,20 +23,16 @@ local MainFrame = Create("Frame", {
 	BorderSizePixel = 0,
 	BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 	AnchorPoint = Vector2.new(0.5, 0.5),
-	Size = UDim2.new(0.45, 0, 0.6, 0),
+	Size = UDim2.new(0, 0, 0, 0),
 	Position = UDim2.new(0.5, 0, 0.5, 0),
-	Parent = GUI
+	Parent = GUI,
+	AutomaticSize = Enum.AutomaticSize.Y
 }, {
 	Create("UIScale", {}),
 	Create("UICorner", { CornerRadius = UDim.new(0, 16) }),
-	Create("UIAspectRatioConstraint", {
-		AspectRatio = 1.15,
-		AspectType = Enum.AspectType.FitWithinMaxSize,
-		DominantAxis = Enum.DominantAxis.Height
-	}),
 	Create("UISizeConstraint", {
-		MinSize = Vector2.new(350, 350),
-		MaxSize = Vector2.new(500, 500)
+		MinSize = Vector2.new(350, 0),
+		MaxSize = Vector2.new(500, 600)
 	})
 })
 
@@ -44,7 +40,7 @@ local TopFrame = Create("Frame", {
 	SizeConstraint = Enum.SizeConstraint.RelativeXX,
 	BorderSizePixel = 0,
 	BackgroundColor3 = Color3.fromRGB(0, 0, 255),
-	Size = UDim2.new(1, 0, 0.13, 0),
+	Size = UDim2.new(1, 0, 0, 50),
 	Parent = MainFrame
 }, {
 	Create("UIPadding", {
@@ -119,14 +115,15 @@ local ScrollFrame = Create("ScrollingFrame", {
 	MidImage = "rbxassetid://14558030992",
 	Selectable = false,
 	BottomImage = "rbxassetid://14558036860",
-	Size = UDim2.new(1, 0, 0.87, 0),
+	Size = UDim2.new(1, 0, 0, 0),
 	ScrollBarImageColor3 = Color3.fromRGB(255, 0, 133),
-	Position = UDim2.new(0, 0, 0.13, 0),
+	Position = UDim2.new(0, 0, 0, 50),
 	BorderColor3 = Color3.fromRGB(0, 0, 0),
 	ScrollBarThickness = 8,
 	LayoutOrder = 1,
 	BackgroundTransparency = 1,
-	Parent = MainFrame
+	Parent = MainFrame,
+	AutomaticSize = Enum.AutomaticSize.Y
 }, {
 	Create("UIListLayout", {
 		Padding = UDim.new(0, 12),
@@ -151,12 +148,11 @@ Create("TextLabel", {
 	TextColor3 = Color3.fromRGB(18, 37, 100),
 	BackgroundTransparency = 1,
 	RichText = true,
-	AnchorPoint = Vector2.new(0, 0.5),
 	Size = UDim2.new(1, 0, 0, 50),
+	AutomaticSize = Enum.AutomaticSize.Y,
 	Text = '<font transparency="0.3"><b>Prompt Sniper</b></font>\nAuto-clicks ProximityPrompt or ClickDetector when UGC is for sale.',
 	LayoutOrder = 3,
 	Name = "Description",
-	Position = UDim2.new(0, 0, 0.5, 0),
 	Parent = ScrollFrame
 })
 
@@ -171,12 +167,11 @@ Create("TextLabel", {
 	TextColor3 = Color3.fromRGB(18, 37, 100),
 	BackgroundTransparency = 1,
 	RichText = true,
-	AnchorPoint = Vector2.new(0, 0.5),
 	Size = UDim2.new(1, 0, 0, 80),
+	AutomaticSize = Enum.AutomaticSize.Y,
 	Text = '<font transparency="0.3"><b>How it Works</b></font>\nEnter Item ID. Script checks availability and triggers nearby prompts automatically.',
 	LayoutOrder = 3,
 	Name = "Description",
-	Position = UDim2.new(0, 0, 0.5, 0),
 	Parent = ScrollFrame
 })
 
@@ -191,11 +186,10 @@ Create("TextLabel", {
 	TextColor3 = Color3.fromRGB(18, 37, 100),
 	BackgroundTransparency = 1,
 	RichText = true,
-	AnchorPoint = Vector2.new(0, 0.5),
 	Size = UDim2.new(1, 0, 0, 80),
+	AutomaticSize = Enum.AutomaticSize.Y,
 	Text = '<font transparency="0.3"><b>Methods</b></font>\nChoose ProximityPrompt or ClickDetector. Stays within 15 studs range.',
 	LayoutOrder = 3,
 	Name = "Description",
-	Position = UDim2.new(0, 0, 0.5, 0),
 	Parent = ScrollFrame
 })
