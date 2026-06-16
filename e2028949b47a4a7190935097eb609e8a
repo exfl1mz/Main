@@ -12,11 +12,11 @@ function Create(instance, properties, children)
 	local obj = Instance.new(instance)
 	for i, v in pairs(properties or {}) do
 		obj[i] = v 
-		for _, child in pairs(children or {}) do
-			child.Parent = obj;
-		end
 	end
-	return obj;
+	for _, child in pairs(children or {}) do
+		child.Parent = obj
+	end
+	return obj
 end
 
 local MainFrame = Create("Frame", {
@@ -33,6 +33,10 @@ local MainFrame = Create("Frame", {
 	Create("UISizeConstraint", {
 		MinSize = Vector2.new(350, 0),
 		MaxSize = Vector2.new(500, 600)
+	}),
+	Create("UIListLayout", {
+		SortOrder = Enum.SortOrder.LayoutOrder,
+		HorizontalAlignment = Enum.HorizontalAlignment.Center
 	})
 })
 
@@ -41,6 +45,7 @@ local TopFrame = Create("Frame", {
 	BorderSizePixel = 0,
 	BackgroundColor3 = Color3.fromRGB(0, 0, 255),
 	Size = UDim2.new(1, 0, 0, 50),
+	LayoutOrder = 1,
 	Parent = MainFrame
 }, {
 	Create("UIPadding", {
@@ -117,10 +122,9 @@ local ScrollFrame = Create("ScrollingFrame", {
 	BottomImage = "rbxassetid://14558036860",
 	Size = UDim2.new(1, 0, 0, 0),
 	ScrollBarImageColor3 = Color3.fromRGB(255, 0, 133),
-	Position = UDim2.new(0, 0, 0, 50),
 	BorderColor3 = Color3.fromRGB(0, 0, 0),
 	ScrollBarThickness = 8,
-	LayoutOrder = 1,
+	LayoutOrder = 2,
 	BackgroundTransparency = 1,
 	Parent = MainFrame,
 	AutomaticSize = Enum.AutomaticSize.Y
@@ -148,11 +152,11 @@ Create("TextLabel", {
 	TextColor3 = Color3.fromRGB(18, 37, 100),
 	BackgroundTransparency = 1,
 	RichText = true,
-	Size = UDim2.new(1, 0, 0, 50),
+	Size = UDim2.new(1, 0, 0, 0),
 	AutomaticSize = Enum.AutomaticSize.Y,
 	Text = '<font transparency="0.3"><b>Prompt Sniper</b></font>\nAuto-clicks ProximityPrompt or ClickDetector when UGC is for sale.',
-	LayoutOrder = 3,
-	Name = "Description",
+	LayoutOrder = 1,
+	Name = "Description1",
 	Parent = ScrollFrame
 })
 
@@ -167,11 +171,11 @@ Create("TextLabel", {
 	TextColor3 = Color3.fromRGB(18, 37, 100),
 	BackgroundTransparency = 1,
 	RichText = true,
-	Size = UDim2.new(1, 0, 0, 80),
+	Size = UDim2.new(1, 0, 0, 0),
 	AutomaticSize = Enum.AutomaticSize.Y,
 	Text = '<font transparency="0.3"><b>How it Works</b></font>\nEnter Item ID. Script checks availability and triggers nearby prompts automatically.',
-	LayoutOrder = 3,
-	Name = "Description",
+	LayoutOrder = 2,
+	Name = "Description2",
 	Parent = ScrollFrame
 })
 
@@ -186,10 +190,10 @@ Create("TextLabel", {
 	TextColor3 = Color3.fromRGB(18, 37, 100),
 	BackgroundTransparency = 1,
 	RichText = true,
-	Size = UDim2.new(1, 0, 0, 80),
+	Size = UDim2.new(1, 0, 0, 0),
 	AutomaticSize = Enum.AutomaticSize.Y,
-	Text = '<font transparency="0.3"><b>Methods</b></font>\nChoose ProximityPrompt or ClickDetector.',
+	Text = '<font transparency="0.3"><b>Methods</b></font>\nChoose ProximityPrompt or ClickDetector. Stays within 15 studs range.',
 	LayoutOrder = 3,
-	Name = "Description",
+	Name = "Description3",
 	Parent = ScrollFrame
 })
