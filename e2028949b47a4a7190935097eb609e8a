@@ -188,7 +188,7 @@ Create("TextLabel", {
 	RichText = true,
 	Size = UDim2.new(1, 0, 0, 80),
 	AutomaticSize = Enum.AutomaticSize.Y,
-	Text = '<font transparency="0.3"><b>Methods</b></font>\nChoose ProximityPrompt or ClickDetector. Stays within 15 studs range.',
+	Text = '<font transparency="0.3"><b>Methods</b></font>\nChoose ProximityPrompt or ClickDetector.',
 	LayoutOrder = 3,
 	Name = "Description",
 	Parent = ScrollFrame
