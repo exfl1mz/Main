@@ -1,0 +1,338 @@
+local library = {count = 0, queue = {}, rainbowtable = {}, toggled = true, binds = {}};
+local defaults; do
+    local dragger = {}; do
+        local inputService = game:GetService('UserInputService');
+        
+        function dragger.new(frame)
+            local dragging = false
+            local dragInput
+            local dragStart
+            local startPos
+
+            local function update(input)
+                local delta = input.Position - dragStart
+                frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+
+            frame.InputBegan:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                    dragging = true
+                    dragStart = input.Position
+                    startPos = frame.Position
+
+                    input.Changed:Connect(function()
+                        if input.UserInputState == Enum.UserInputState.End then
+                            dragging = false
+                        end
+                    end)
+                end
+            end)
+
+            frame.InputChanged:Connect(function(input)
+                if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+                    dragInput = input
+                end
+            end)
+
+            inputService.InputChanged:Connect(function(input)
+                if input == dragInput and dragging then
+                    update(input)
+                end
+            end)
+        end
+
+        game:GetService('UserInputService').InputBegan:connect(function(key, gpe)
+            if (not gpe) then
+                if key.KeyCode == Enum.KeyCode.RightControl then
+                    library.toggled = not library.toggled;
+                    for i, data in next, library.queue do
+                        local pos = (library.toggled and data.p or UDim2.new(-1, 0, -0.5,0))
+                        data.w:TweenPosition(pos, (library.toggled and 'Out' or 'In'), 'Quad', 0.15, true)
+                        wait();
+                    end
+                end
+            end
+        end)
+    end
+    
+    local types = {}; do
+        types.__index = types;
+        function types.window(name, options)
+            library.count = library.count + 1
+            local newWindow = library:Create('Frame', {
+                Name = name;
+                Size = UDim2.new(0, 190, 0, 30);
+                BackgroundColor3 = options.topcolor;
+                BorderSizePixel = 0;
+                Parent = library.container;
+                Position = UDim2.new(0, (15 + (200 * library.count) - 200), 0, 0);
+                ZIndex = 3;
+                library:Create('TextLabel', {
+                    Text = name;
+                    Size = UDim2.new(1, -10, 1, 0);
+                    Position = UDim2.new(0, 5, 0, 0);
+                    BackgroundTransparency = 1;
+                    Font = Enum.Font.Code;
+                    TextSize = options.titlesize;
+                    Font = options.titlefont;
+                    TextColor3 = options.titletextcolor;
+                    TextStrokeTransparency = library.options.titlestroke;
+                    TextStrokeColor3 = library.options.titlestrokecolor;
+                    ZIndex = 3;
+                });
+                library:Create("TextButton", {
+                    Size = UDim2.new(0, 30, 0, 30);
+                    Position = UDim2.new(1, -35, 0, 0);
+                    BackgroundTransparency = 1;
+                    Text = "-";
+                    TextSize = options.titlesize;
+                    Font = options.titlefont;
+                    Name = 'window_toggle';
+                    TextColor3 = options.titletextcolor;
+                    TextStrokeTransparency = library.options.titlestroke;
+                    TextStrokeColor3 = library.options.titlestrokecolor;
+                    ZIndex = 3;
+                });
+                library:Create("Frame", {
+                    Name = 'Underline';
+                    Size = UDim2.new(1, 0, 0, 2);
+                    Position = UDim2.new(0, 0, 1, -2);
+                    BackgroundColor3 = (options.underlinecolor ~= "rainbow" and options.underlinecolor or Color3.new());
+                    BorderSizePixel = 0;
+                    ZIndex = 3;
+                });
+                library:Create('Frame', {
+                    Name = 'container';
+                    Position = UDim2.new(0, 0, 1, 0);
+                    Size = UDim2.new(1, 0, 0, 0);
+                    BorderSizePixel = 0;
+                    BackgroundColor3 = options.bgcolor;
+                    ClipsDescendants = false;
+                    library:Create('UIListLayout', {
+                        Name = 'List';
+                        SortOrder = Enum.SortOrder.LayoutOrder;
+                    })
+                });
+            })
+            
+            if options.underlinecolor == "rainbow" then
+                table.insert(library.rainbowtable, newWindow:FindFirstChild('Underline'))
+            end
+
+            local window = setmetatable({
+                count = 0;
+                object = newWindow;
+                container = newWindow.container;
+                toggled = true;
+                flags   = {};
+                sectionsList = {};
+
+            }, types)
+
+            table.insert(library.queue, {
+                w = window.object;
+                p = window.object.Position;
+            })
+
+            newWindow:FindFirstChild("window_toggle").MouseButton1Click:connect(function()
+                window.toggled = not window.toggled;
+                newWindow:FindFirstChild("window_toggle").Text = (window.toggled and "+" or "-")
+                if (not window.toggled) then
+                    window.container.ClipsDescendants = true;
+                end
+                wait();
+                local y = 0;
+                for i, v in next, window.container:GetChildren() do
+                    if (not v:IsA('UIListLayout')) then
+                        y = y + v.AbsoluteSize.Y;
+                    end
+                end 
+
+                local targetSize = window.toggled and UDim2.new(1, 0, 0, y+5) or UDim2.new(1, 0, 0, 0);
+                local targetDirection = window.toggled and "In" or "Out"
+
+                window.container:TweenSize(targetSize, targetDirection, "Quint", .3, true)
+                wait(.3)
+                if window.toggled then
+                    window.container.ClipsDescendants = false;
+                end
+            end)
+
+            return window;
+        end
+        
+        function types:Resize()
+            local y = 0;
+            for i, v in next, self.container:GetChildren() do
+                if (not v:IsA('UIListLayout')) then
+                    y = y + v.AbsoluteSize.Y;
+                end
+            end 
+            self.container.Size = UDim2.new(1, 0, 0, y+5)
+        end
+        
+        function types:GetOrder() 
+            local c = 0;
+            for i, v in next, self.container:GetChildren() do
+                if (not v:IsA('UIListLayout')) then
+                    c = c + 1
+                end
+            end
+            return c
+        end
+        
+        function types:Section(options)
+            local text = options.text or options.name or "Unknown"
+            local image = options.image or options.icon or ""
+            local index = options.index or #self.sectionsList + 1
+            
+            local order = self:GetOrder();
+            local determinedSize = UDim2.new(1, 0, 0, 30)
+            local determinedPos = UDim2.new(0, 35, 0, 0);
+            local secondarySize = UDim2.new(1, -35, 1, 0);
+                        
+            if order == 0 then
+                determinedSize = UDim2.new(1, 0, 0, 30)
+                determinedPos = UDim2.new(0, 35, 0, 0);
+                secondarySize = UDim2.new(1, -35, 1, 0)
+            end
+            
+            local check = library:Create('Frame', {
+                Name = 'Section';
+                BackgroundTransparency = 0;
+                BackgroundColor3 = library.options.sectncolor;
+                Size = determinedSize;
+                BorderSizePixel = 0;
+                LayoutOrder = order;
+                library:Create('ImageLabel', {
+                    Name = 'Icon';
+                    BackgroundTransparency = 1;
+                    Image = image;
+                    Size = UDim2.new(0, 25, 0, 25);
+                    Position = UDim2.new(0, 5, 0, 2.5);
+                    ScaleType = Enum.ScaleType.Fit;
+                });
+                library:Create('TextLabel', {
+                    Name = 'section_lbl';
+                    Text = text;
+                    BackgroundTransparency = 1;
+                    BorderSizePixel = 0;
+                    TextColor3 = library.options.textcolor;
+                    Position = determinedPos;
+                    Size     = secondarySize;
+                    TextXAlignment = Enum.TextXAlignment.Left;
+                    Font = library.options.font;
+                    TextSize = library.options.fontsize;
+                    TextStrokeTransparency = library.options.textstroke;
+                    TextStrokeColor3 = library.options.strokecolor;
+                });
+                Parent = self.container;
+            });
+            
+            local textLabel = check:FindFirstChild('section_lbl')
+            local iconLabel = check:FindFirstChild('Icon')
+        
+            table.insert(self.sectionsList, {
+                frame = check,
+                textLabel = textLabel,
+                iconLabel = iconLabel,
+                index = index
+            })
+        
+            self:Resize();
+            return check
+        end
+        
+        function types:Update(data)
+            for index, updateData in pairs(data) do
+                if self.sectionsList[index] then
+                    local section = self.sectionsList[index]
+                    
+                    if updateData.text then
+                        section.textLabel.Text = updateData.text
+                    end
+                    
+                    if updateData.image then
+                        section.iconLabel.Image = updateData.image
+                    end
+                end
+            end
+        end
+    end
+    
+    function library:Create(class, data)
+        local obj = Instance.new(class);
+        for i, v in next, data do
+            if i ~= 'Parent' then
+                if typeof(v) == "Instance" then
+                    v.Parent = obj;
+                else
+                    obj[i] = v
+                end
+            end
+        end
+        
+        obj.Parent = data.Parent;
+        return obj
+    end
+    
+    defaults = {
+        topcolor       = Color3.fromRGB(30, 30, 30);
+        titlecolor     = Color3.fromRGB(255, 255, 255);
+        underlinecolor = Color3.fromRGB(0, 0, 255);
+        bgcolor        = Color3.fromRGB(35, 35, 35);
+        sectncolor     = Color3.fromRGB(25, 25, 25);
+        bordercolor    = Color3.fromRGB(60, 60, 60);
+        font           = Enum.Font.SourceSans;
+        titlefont      = Enum.Font.Code;
+        fontsize       = 17;
+        titlesize      = 18;
+        textstroke     = 1;
+        titlestroke    = 1;
+        strokecolor    = Color3.fromRGB(0, 0, 0);
+        textcolor      = Color3.fromRGB(255, 255, 255);
+        titletextcolor = Color3.fromRGB(255, 255, 255);
+        titlestrokecolor = Color3.fromRGB(0, 0, 0);
+    }
+	
+    function library:CreateWindow(name, options)
+        if (not library.container) then
+            library.container = self:Create("ScreenGui", {
+                self:Create('Frame', {
+                    Name = 'Container';
+                    Size = UDim2.new(1, -30, 1, 0);
+                    Position = UDim2.new(0, 20, 0, 20);
+                    BackgroundTransparency = 1;
+                    Active = false;
+                });
+                Parent = game:GetService("CoreGui");
+            }):FindFirstChild('Container');
+        end
+        
+        if (not library.options) then
+            library.options = setmetatable(options or {}, {__index = defaults})
+        end
+        if (options) then
+            library.options = setmetatable(options, {__index = defaults})
+        end
+        
+        local window = types.window(name, library.options);
+        dragger.new(window.object);
+        return window
+    end
+
+    library.options = setmetatable({}, {__index = defaults})
+
+    spawn(function()
+        while true do
+            for i=0, 1, 1 / 300 do              
+                for _, obj in next, library.rainbowtable do
+                    obj.BackgroundColor3 = Color3.fromHSV(i, 1, 1);
+                end
+                wait()
+            end;
+        end
+    end)
+end
+
+return library
