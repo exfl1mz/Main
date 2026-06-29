@@ -180,21 +180,24 @@ local defaults; do
             end
             return c
         end
-        
+            
         function types:Section(options)
             local text = options.text or options.name or "Unknown"
             local image = options.image or options.icon or ""
             local index = options.index or #self.sectionsList + 1
+            local info = options.info or {}
+            
+            local windowRef = self
             
             local order = self:GetOrder();
             local determinedSize = UDim2.new(1, 0, 0, 30)
             local determinedPos = UDim2.new(0, 35, 0, 0);
-            local secondarySize = UDim2.new(1, -35, 1, 0);
-                        
+            local secondarySize = UDim2.new(1, -65, 1, 0);
+                            
             if order == 0 then
                 determinedSize = UDim2.new(1, 0, 0, 30)
                 determinedPos = UDim2.new(0, 35, 0, 0);
-                secondarySize = UDim2.new(1, -35, 1, 0)
+                secondarySize = UDim2.new(1, -65, 1, 0)
             end
             
             local check = library:Create('Frame', {
@@ -204,6 +207,7 @@ local defaults; do
                 Size = determinedSize;
                 BorderSizePixel = 0;
                 LayoutOrder = order;
+                ClipsDescendants = false;
                 library:Create('ImageLabel', {
                     Name = 'Icon';
                     BackgroundTransparency = 1;
@@ -221,26 +225,159 @@ local defaults; do
                     Position = determinedPos;
                     Size     = secondarySize;
                     TextXAlignment = Enum.TextXAlignment.Left;
+                    TextYAlignment = Enum.TextYAlignment.Center;
+                    TextWrapped = true;
                     Font = library.options.font;
                     TextSize = library.options.fontsize;
                     TextStrokeTransparency = library.options.textstroke;
                     TextStrokeColor3 = library.options.strokecolor;
+                });
+                library:Create('TextButton', {
+                    Name = 'InfoBtn';
+                    Size = UDim2.new(0, 20, 0, 20);
+                    Position = UDim2.new(1, -25, 0, 5);
+                    BackgroundTransparency = 1;
+                    BorderSizePixel = 0;
+                    Text = '?';
+                    TextColor3 = Color3.fromRGB(255, 255, 255);
+                    TextSize = 16;
+                    Font = Enum.Font.SourceSansBold;
+                    ZIndex = 3;
                 });
                 Parent = self.container;
             });
             
             local textLabel = check:FindFirstChild('section_lbl')
             local iconLabel = check:FindFirstChild('Icon')
-        
+            local infoBtn = check:FindFirstChild('InfoBtn')
+            
+            local infoPanel = library:Create('Frame', {
+                Name = 'InfoPanel';
+                BackgroundColor3 = Color3.fromRGB(15, 15, 18);
+                BorderSizePixel = 0;
+                Position = UDim2.new(1, 5, 0, 0);
+                Size = UDim2.new(0, 0, 0, 140);
+                ClipsDescendants = true;
+                ZIndex = 5;
+                Parent = check;
+            })
+
+            local infoCorner = library:Create('UICorner', {
+                CornerRadius = UDim.new(0, 8);
+                Parent = infoPanel;
+            })
+            
+            local previewImage = library:Create('ImageLabel', {
+                Name = 'PreviewImage';
+                BackgroundColor3 = Color3.fromRGB(23, 23, 28);
+                BorderSizePixel = 0;
+                Position = UDim2.new(0, 5, 0, 5);
+                Size = UDim2.new(1, -10, 0, 80);
+                Image = "";
+                ScaleType = Enum.ScaleType.Crop;
+                ClipsDescendants = true;
+                ZIndex = 6;
+                Parent = infoPanel;
+            })
+
+            local PreviewCorner = library:Create('UICorner', {
+                CornerRadius = UDim.new(0, 8);
+                Parent = previewImage;
+            })
+            
+            local infoNameLabel = library:Create('TextLabel', {
+                Name = 'InfoName';
+                BackgroundColor3 = Color3.fromRGB(15, 15, 18);
+                BorderSizePixel = 0;
+                Position = UDim2.new(0, 5, 0, 90);
+                Size = UDim2.new(1, -10, 0, 22);
+                Text = "";
+                TextColor3 = Color3.fromRGB(255, 255, 255);
+                TextScaled = true;
+                TextSize = 14;
+                FontFace = Font.fromId(12187365364, Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+                TextStrokeTransparency = library.options.textstroke;
+                TextStrokeColor3 = library.options.strokecolor;
+                ZIndex = 6;
+                Parent = infoPanel;
+            })
+            
+            local templateLabel = library:Create('TextLabel', {
+                Name = 'InfoTemplate';
+                BackgroundColor3 = Color3.fromRGB(15, 15, 18);
+                BorderSizePixel = 0;
+                Position = UDim2.new(0, 5, 0, 130);
+                Size = UDim2.new(1, -10, 0, 5);
+                Text = "";
+                TextColor3 = Color3.fromRGB(255, 255, 255);
+                TextSize = 12;
+                FontFace = Font.fromId(12187365364, Enum.FontWeight.Medium, Enum.FontStyle.Normal);
+                TextStrokeTransparency = library.options.textstroke;
+                TextStrokeColor3 = library.options.strokecolor;
+                ZIndex = 6;
+                Parent = infoPanel;
+            })
+            
+            local sectionObj = {
+                frame = check,
+                isOpen = false,
+                currentInfo = info
+            }
+            
+            function sectionObj:UpdateInfo(newInfo)
+                self.currentInfo = newInfo
+                if previewImage then previewImage.Image = newInfo.image or "" end
+                if infoNameLabel then infoNameLabel.Text = newInfo.name or "" end
+                if templateLabel then templateLabel.Text = newInfo.template or "" end
+            end
+            
+            local function closeThisPanel()
+                if sectionObj.isOpen then
+                    infoPanel:TweenSize(UDim2.new(0, 0, 0, 140), "Out", "Quint", 0.3, true)
+                    infoBtn.Text = '?'
+                    task.wait(0.3)
+                    sectionObj.isOpen = false
+                    check.ClipsDescendants = false
+                end
+            end
+            
+            local function openThisPanel()
+                if windowRef and windowRef.sectionsList then
+                    for _, sectionData in ipairs(windowRef.sectionsList) do
+                        if sectionData.obj ~= sectionObj and sectionData.obj.isOpen then
+                            sectionData.obj:ClosePanel()
+                        end
+                    end
+                end
+                
+                sectionObj:UpdateInfo(sectionObj.currentInfo)
+                infoPanel:TweenSize(UDim2.new(0, 100, 0, 140), "Out", "Quint", 0.3, true)
+                infoBtn.Text = '×'
+                sectionObj.isOpen = true
+                check.ClipsDescendants = false
+            end
+            
+            sectionObj.ClosePanel = closeThisPanel
+            sectionObj.OpenPanel = openThisPanel
+            
+            infoBtn.MouseButton1Click:Connect(function()
+                if sectionObj.isOpen then
+                    closeThisPanel()
+                else
+                    openThisPanel()
+                end
+            end)
+
             table.insert(self.sectionsList, {
                 frame = check,
                 textLabel = textLabel,
                 iconLabel = iconLabel,
-                index = index
+                index = index,
+                obj = sectionObj
             })
-        
+
             self:Resize();
-            return check
+            return sectionObj
         end
         
         function types:Update(data)
@@ -258,81 +395,81 @@ local defaults; do
                 end
             end
         end
-    end
-    
-    function library:Create(class, data)
-        local obj = Instance.new(class);
-        for i, v in next, data do
-            if i ~= 'Parent' then
-                if typeof(v) == "Instance" then
-                    v.Parent = obj;
-                else
-                    obj[i] = v
+        
+        function library:Create(class, data)
+            local obj = Instance.new(class);
+            for i, v in next, data do
+                if i ~= 'Parent' then
+                    if typeof(v) == "Instance" then
+                        v.Parent = obj;
+                    else
+                        obj[i] = v
+                    end
                 end
             end
+            
+            obj.Parent = data.Parent;
+            return obj
         end
         
-        obj.Parent = data.Parent;
-        return obj
-    end
-    
-    defaults = {
-        topcolor       = Color3.fromRGB(30, 30, 30);
-        titlecolor     = Color3.fromRGB(255, 255, 255);
-        underlinecolor = Color3.fromRGB(0, 0, 255);
-        bgcolor        = Color3.fromRGB(35, 35, 35);
-        sectncolor     = Color3.fromRGB(25, 25, 25);
-        bordercolor    = Color3.fromRGB(60, 60, 60);
-        font           = Enum.Font.SourceSans;
-        titlefont      = Enum.Font.Code;
-        fontsize       = 17;
-        titlesize      = 18;
-        textstroke     = 1;
-        titlestroke    = 1;
-        strokecolor    = Color3.fromRGB(0, 0, 0);
-        textcolor      = Color3.fromRGB(255, 255, 255);
-        titletextcolor = Color3.fromRGB(255, 255, 255);
-        titlestrokecolor = Color3.fromRGB(0, 0, 0);
-    }
-	
-    function library:CreateWindow(name, options)
-        if (not library.container) then
-            library.container = self:Create("ScreenGui", {
-                self:Create('Frame', {
-                    Name = 'Container';
-                    Size = UDim2.new(1, -30, 1, 0);
-                    Position = UDim2.new(0, 20, 0, 20);
-                    BackgroundTransparency = 1;
-                    Active = false;
-                });
-                Parent = game:GetService("CoreGui");
-            }):FindFirstChild('Container');
-        end
+        defaults = {
+            topcolor       = Color3.fromRGB(30, 30, 30);
+            titlecolor     = Color3.fromRGB(255, 255, 255);
+            underlinecolor = Color3.fromRGB(0, 0, 255);
+            bgcolor        = Color3.fromRGB(35, 35, 35);
+            sectncolor     = Color3.fromRGB(25, 25, 25);
+            bordercolor    = Color3.fromRGB(60, 60, 60);
+            font           = Enum.Font.SourceSans;
+            titlefont      = Enum.Font.Code;
+            fontsize       = 17;
+            titlesize      = 18;
+            textstroke     = 1;
+            titlestroke    = 1;
+            strokecolor    = Color3.fromRGB(0, 0, 0);
+            textcolor      = Color3.fromRGB(255, 255, 255);
+            titletextcolor = Color3.fromRGB(255, 255, 255);
+            titlestrokecolor = Color3.fromRGB(0, 0, 0);
+        }
         
-        if (not library.options) then
-            library.options = setmetatable(options or {}, {__index = defaults})
+        function library:CreateWindow(name, options)
+            if (not library.container) then
+                library.container = self:Create("ScreenGui", {
+                    self:Create('Frame', {
+                        Name = 'Container';
+                        Size = UDim2.new(1, -30, 1, 0);
+                        Position = UDim2.new(0, 20, 0, 20);
+                        BackgroundTransparency = 1;
+                        Active = false;
+                    });
+                    Parent = game:GetService("CoreGui");
+                }):FindFirstChild('Container');
+            end
+            
+            if (not library.options) then
+                library.options = setmetatable(options or {}, {__index = defaults})
+            end
+            if (options) then
+                library.options = setmetatable(options, {__index = defaults})
+            end
+            
+            local window = types.window(name, library.options);
+            dragger.new(window.object);
+            return window
         end
-        if (options) then
-            library.options = setmetatable(options, {__index = defaults})
-        end
-        
-        local window = types.window(name, library.options);
-        dragger.new(window.object);
-        return window
-    end
 
-    library.options = setmetatable({}, {__index = defaults})
+        library.options = setmetatable({}, {__index = defaults})
 
-    spawn(function()
-        while true do
-            for i=0, 1, 1 / 300 do              
-                for _, obj in next, library.rainbowtable do
-                    obj.BackgroundColor3 = Color3.fromHSV(i, 1, 1);
-                end
-                wait()
-            end;
-        end
-    end)
+        spawn(function()
+            while true do
+                for i=0, 1, 1 / 300 do              
+                    for _, obj in next, library.rainbowtable do
+                        obj.BackgroundColor3 = Color3.fromHSV(i, 1, 1);
+                    end
+                    wait()
+                end;
+            end
+        end)
+    end
 end
 
 return library
