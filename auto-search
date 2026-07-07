@@ -1,0 +1,528 @@
+--[[
+     ███▄    █  ▒█████   ▄████▄  ▄▄▄█████▓ █    ██  ██▀███   ▄▄▄       ██▓    
+     ██ ▀█   █ ▒██▒  ██▒▒██▀ ▀█  ▓  ██▒ ▓▒ ██  ▓██▒▓██ ▒ ██▒▒████▄    ▓██▒    
+    ▓██  ▀█ ██▒▒██░  ██▒▒▓█    ▄ ▒ ▓██░ ▒░▓██  ▒██░▓██ ░▄█ ▒▒██  ▀█▄  ▒██░    
+    ▓██▒  ▐▌██▒▒██   ██░▒▓▓▄ ▄██▒░ ▓██▓ ░ ▓▓█  ░██░▒██▀▀█▄  ░██▄▄▄▄██ ▒██░    
+    ▒██░   ▓██░░ ████▓▒░▒ ▓███▀ ░  ▒██▒ ░ ▒▒█████▓ ░██▓ ▒██▒ ▓█   ▓██▒░██████▒
+    ░ ▒░   ▒ ▒ ░ ▒░▒░▒░ ░ ░▒ ▒  ░  ▒ ░░   ░▒▓▒ ▒ ▒ ░ ▒▓ ░▒▓░ ▒▒   ▓▒█░░ ▒░▓  ░
+    ░ ░░   ░ ▒░  ░ ▒ ▒░   ░  ▒       ░    ░░▒░ ░ ░   ░▒ ░ ▒░  ▒   ▒▒ ░░ ░ ▒  ░
+      ░   ░ ░ ░ ░ ░ ▒  ░          ░       ░░░ ░ ░   ░░   ░   ░   ▒     ░ ░   
+            ░     ░ ░  ░ ░                  ░        ░           ░  ░    ░  ░
+                       ░                                                     
+]]
+
+if not game:IsLoaded() then game.Loaded:Wait() end
+
+getgenv().config = {
+    ROBLOSECURITY = "", -- cookie from the account that will BUY website items (can be your alt account, snipe from main)
+    CSRF = nil, -- dont touch it
+    Rolimons = {
+        AutoSearch = true,
+        BlockNotify = false -- block rolimons notify when new ugc appear in the screen
+    },
+    Discord = {
+        Url = "", -- webhook url
+        Fails_Url = "", -- purchase fails webhook url
+        PingUser = "" -- discord id
+    }
+}
+
+if game.PlaceId ~= 14056754882 then
+    game:GetService("Players").LocalPlayer:Kick("join in Flex Your UGC Limiteds to run current script"); task.wait(.1); game:GetService('TeleportService'):Teleport(14056754882, LocalPlayer); return
+end
+
+if getgenv().config == nil then
+    game:GetService("Players").LocalPlayer:Kick("where is your search Config?"); return
+end
+
+local cookiePrefix = "_|WARNING:-DO-NOT-SHARE-THIS.--Sharing-this-will-allow-someone-to-log-in-as-you-and-to-steal-your-ROBUX-and-items.|"
+if string.sub(getgenv().config.ROBLOSECURITY, 1, #cookiePrefix) ~= cookiePrefix then
+    game:GetService("Players").LocalPlayer:Kick("how the fuck am i supposed to buy website UGCs without ROBLOSECURITY???"); return
+end
+
+local Players = cloneref(game:GetService("Players"))
+local Request = http_request or request or HttpPost or syn.request
+local VirtualUser = cloneref(game:GetService("VirtualUser"))
+local LocalPlayer = Players.LocalPlayer
+
+getgenv().env = getrenv()
+env.HttpService = cloneref(game:GetService("HttpService"))
+env.MarketplaceService = cloneref(game:GetService("MarketplaceService"))
+
+local NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Module.Lua"))()
+local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/BocusLuke/UI/main/STX/Client.Lua"))()
+local Notify = game:GetService("ReplicatedStorage"):WaitForChild("Notify")
+
+local WebhookUrl: string | false = config.Discord.Url ~= '' and config.Discord.Url or false
+local WebhookFails: string | false = config.Discord.Fails_Url ~= '' and config.Discord.Fails_Url or false
+
+local Game = env.MarketplaceService:GetProductInfo(game.PlaceId).Name
+
+local function fetchAccountInfo(): (string?, string?)
+    local res = Request({
+        Url = "https://users.roblox.com/v1/users/authenticated",
+        Method = "GET",
+        Headers = {
+            ["Cookie"] = `.ROBLOSECURITY={config.ROBLOSECURITY}`
+        }
+    })
+    if res.StatusCode == 200 then
+        local decoded = env.HttpService:JSONDecode(res.Body)
+        return tostring(decoded.id), decoded.name
+    end
+    return nil, "Unknown?"
+end
+
+local purchasedId, purchasedName = fetchAccountInfo()
+
+if not purchasedId then
+    game:GetService("Players").LocalPlayer:Kick("Cookie Account not found; put correct cookie"); return
+end
+
+local function fetchRobux(userId: string): number?
+    local res = Request({
+        Url = `https://economy.roblox.com/v1/users/{userId}/currency`,
+        Method = "GET",
+        Headers = {
+            ["Cookie"] = `.ROBLOSECURITY={config.ROBLOSECURITY}`
+        }
+    })
+    if res.StatusCode == 200 then
+        return env.HttpService:JSONDecode(res.Body).robux
+    end
+    return nil
+end
+
+local function fetchCSRF(): string?
+    local res = Request({
+        Url = "https://auth.roblox.com/v2/logout",
+        Method = "POST",
+        Headers = {
+            ["Cookie"] = `.ROBLOSECURITY={config.ROBLOSECURITY}`,
+            ["Content-Type"] = "application/json"
+        }
+    })
+    if res and res.Headers and res.Headers["x-csrf-token"] then
+        getgenv().config.CSRF = res.Headers["x-csrf-token"]
+        return getgenv().config.CSRF
+    end
+    return nil
+end
+
+fetchCSRF()
+
+task.spawn(function()
+    while task.wait(180) do
+        fetchCSRF()
+    end
+end)
+
+local function _payload(assetId: number): {metadata: table}?
+    local itemInfo = env.MarketplaceService:GetProductInfo(assetId)
+
+    local metadata = {
+        AssetId = itemInfo.AssetId,
+        Name = itemInfo.Name,
+        Description = itemInfo.Description,
+        AssetTypeId = itemInfo.AssetTypeId,
+        ProductType = itemInfo.ProductType,
+        IsForSale = itemInfo.IsForSale,
+        IsLimited = itemInfo.IsLimited,
+        IsLimited2 = itemInfo.CollectiblesItemDetails.IsLimited or false,
+        IsLimitedUnique = itemInfo.IsLimitedUnique,
+        Remaining = itemInfo.Remaining or nil,
+        Quantity = itemInfo.CollectiblesItemDetails.TotalQuantity or nil,
+        Sales = itemInfo.Sales,
+        Created = itemInfo.Created,
+        Updated = itemInfo.Updated,
+        MinimumMembershipLevel = itemInfo.MinimumMembershipLevel,
+        ContentRatingTypeId = itemInfo.ContentRatingTypeId,
+        IconImageAssetId = itemInfo.IconImageAssetId,
+        TargetId = itemInfo.TargetId,
+        CollectibleItemId = itemInfo.CollectibleItemId,
+        CollectibleProductId = itemInfo.CollectibleProductId,
+        Creator = {
+            Id = itemInfo.Creator.CreatorTargetID,
+            Name = itemInfo.Creator.Name,
+            CreatorType = itemInfo.Creator.CreatorType,
+            CreatorTargetId = itemInfo.Creator.CreatorTargetId,
+            HasVerifiedBadge = itemInfo.Creator.HasVerifiedBadge
+        }
+    }
+
+    return {
+        metadata = metadata
+    }
+end
+
+local function GetImage(id: number): string?
+    local success, response = pcall(function()
+        return env.HttpService:JSONDecode(Request({
+            Method = "GET",
+            Url = `https://thumbnails.roblox.com/v1/assets?assetIds={id}&size=420x420&format=Png&isCircular=false`
+        }).Body)
+    end)
+    
+    if success and response and response.data and response.data[1] and response.data[1].imageUrl then
+        return response.data[1].imageUrl
+    else
+        return nil
+    end
+end
+
+local pagination: string? = nil
+
+local function getSerial(itemID: number, Quantity: number, Remaining: number): (string, string)
+    local ItemInfo = env.MarketplaceService:GetProductInfo(itemID)
+    local res = Request({
+        Url = `https://inventory.roblox.com/v2/users/{purchasedId}/inventory/{ItemInfo.AssetTypeId}?limit=100&sortOrder=Desc&cursor={pagination or ""}`,
+        Method = "GET",
+        Headers = {
+            ["Cookie"] = `.ROBLOSECURITY={config.ROBLOSECURITY}`
+        }
+    })
+    if res.StatusCode ~= 200 then 
+        return tostring(tonumber(Quantity) - tonumber(Remaining) + 1), tostring(tonumber(Remaining) - 1)
+    end
+    local decoded = env.HttpService:JSONDecode(res.Body)
+
+    for i, v in pairs(decoded.data) do
+        if v["assetId"] == itemID then
+            pagination = nil
+            local serial = v["serialNumber"]
+            return serial, tostring(tonumber(Quantity) - tonumber(serial))
+        end
+    end
+
+    pagination = decoded.nextPageCursor 
+    if not pagination then 
+        return tostring(tonumber(Quantity) - tonumber(Remaining) + 1), tostring(tonumber(Remaining) - 1)
+    end
+
+    return getSerial(itemID, Quantity, Remaining)
+end
+
+local function SendWebhookUrl(url: string, isHidden: boolean, Ping: boolean, hideUser: boolean, serial: string | number, remaining: string | number, assetId: number)
+    Request({
+        Method = "POST",
+        Url = url, 
+        Body = env.HttpService:JSONEncode({
+            ["avatar_url"] = "",
+            ["content"] = string.format(Ping and string.len(config.Discord.PingUser) > 16 and "<@%s>" or "", config.Discord.PingUser),
+            ["embeds"] = {
+                {
+                    ["author"] = {
+                        ["name"] = "",
+                    },
+                    ["description"] = ""
+                        .."\n"
+                        ..`### **[{hideUser and "Unknown" or LocalPlayer.Name} purchased new item using auto-search](https://www.roblox.com/catalog/{assetId})**\n`
+                        ..`**Game:** [{Game}](https://www.roblox.com/games/{game.PlaceId})\n`
+                        ..`**Serial:** \`#{isHidden and "?" or serial}\`\n`
+                        ..`**Stock Left:** \`{isHidden and "?" or remaining}\`\n`
+                        ..`**Source:** \`auto-search\`\n`,
+                    ["type"] = "rich",
+                    ["color"] = tonumber(0x0800ff),
+                    ["thumbnail"] = {
+                        ["url"] = GetImage(assetId),
+                    },
+                    ["footer"] = {
+                        ["text"] = "auto-search",
+                        ["icon_url"] = "https://cdn.discordapp.com/emojis/1265248054504718387.webp"
+                    },
+                },
+            },
+        }), 
+        Headers = {["content-type"] = "application/json"}
+    })
+end
+
+local function SendWebhookFails(url: string, fails: string, assetId: number)
+    Request({
+        Method = "POST",
+        Url = url, 
+        Body = env.HttpService:JSONEncode({
+            ["avatar_url"] = "",
+            ["content"] = "",
+            ["embeds"] = {
+                {
+                    ["author"] = {
+                        ["name"] = "",
+                    },
+                    ["description"] = ""
+                        ..`\n`
+                        ..`### **[Failed to purchase item using auto-search](https://www.roblox.com/catalog/{assetId})**\n`
+                        ..`**Game:** [{Game}](https://www.roblox.com/games/{game.PlaceId})\n`
+                        ..`**Error:** \`{fails}\`\n`
+                        ..`**Source:** \`auto-search\`\n`,
+                    ["type"] = "rich",
+                    ["color"] = tonumber(0x0800ff),
+                    ["thumbnail"] = {
+                        ["url"] = GetImage(assetId),
+                    },
+                    ["footer"] = {
+                        ["text"] = "auto-search",
+                        ["icon_url"] = "https://cdn.discordapp.com/emojis/1265248054504718387.webp"
+                    },
+                },
+            },
+        }), 
+        Headers = {["content-type"] = "application/json"}
+    })
+end
+
+local function _BUY(assetId: number): table?
+    local success, productInfo = pcall(function()
+        return env.MarketplaceService:GetProductInfoAsync(assetId)
+    end)
+    if not success or not productInfo then
+        return nil
+    end
+
+    local payload = {
+        collectibleItemId = tostring(productInfo.CollectibleItemId),
+        collectibleProductId = tostring(productInfo.CollectibleProductId),
+        expectedCurrency = 1,
+        expectedPrice = productInfo.PriceInRobux or 0,
+        expectedPurchaserId = tostring(purchasedId),
+        expectedPurchaserType = "User",
+        expectedSellerId = tonumber(productInfo.Creator.Id),
+        expectedSellerType = tostring(productInfo.Creator.CreatorType),
+        idempotencyKey = env.HttpService:GenerateGUID(false),
+    }
+
+    local csrf = getgenv().config.CSRF
+    if not csrf then
+        csrf = fetchCSRF()
+        if not csrf then
+            return nil
+        end
+    end
+
+    local url = `https://apis.roblox.com/marketplace-sales/v1/item/{productInfo.CollectibleItemId}/purchase-item`
+    local headers = {
+        ["Content-Type"] = "application/json;charset=UTF-8",
+        ["Cookie"] = `.ROBLOSECURITY={config.ROBLOSECURITY}`,
+        ["X-CSRF-TOKEN"] = csrf,
+        ["Referer"] = "https://www.roblox.com/",
+        ["Origin"] = "https://www.roblox.com",
+        ["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36",
+        ["Accept"] = "*/*",
+        ["Accept-Language"] = "ru,en-US;q=0.9,en;q=0.8,nl;q=0.7"
+    }
+
+    local response = Request({
+        Url = url,
+        Method = "POST",
+        Headers = headers,
+        Body = env.HttpService:JSONEncode(payload)
+    })
+
+    if response.purchased then
+        return env.HttpService:JSONDecode(response.Body)
+    else
+        if response.StatusCode == 403 and response.Body:find("XSRF") then
+            fetchCSRF()
+            headers["X-CSRF-TOKEN"] = getgenv().config.CSRF
+            response = Request({
+                Url = url,
+                Method = "POST",
+                Headers = headers,
+                Body = env.HttpService:JSONEncode(payload)
+            })
+            if response.purchased and response.StatusCode == 200 then
+                return env.HttpService:JSONDecode(response.Body)
+            end
+        end
+        local decodeSuccess, decoded = pcall(function()
+            return env.HttpService:JSONDecode(response.Body)
+        end)
+        return decodeSuccess and decoded or nil
+    end
+end
+
+LocalPlayer.Idled:Connect(function()
+    VirtualUser:Button2Down(Vector2.new(0,0), Workspace.CurrentCamera.CFrame);
+    task.wait()
+    VirtualUser:Button2Up(Vector2.new(0,0), Workspace.CurrentCamera.CFrame);
+end)
+
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/exfl1mz/Main/main/3c8d5e2a9b4f7e1d6c3a8b5e2f9d4c7f"))() 
+local Window = Library:CreateWindow("auto-search")
+
+Window:Tab(`{purchasedName}: {fetchRobux(purchasedId)}`, `rbxthumb://type=AvatarHeadShot&id={purchasedId}&w=100&h=100`)
+
+local cacheResponse = request({
+    Url = "https://neriumsearch.onrender.com/api/collectibles/all",
+    Method = "GET"
+})
+
+local cache: {[string]: number} = env.HttpService:JSONDecode(cacheResponse.Body).collectibles
+
+for i, key in ipairs({"website", "free", "paid"}) do
+    local idCreate = cache[key]
+    local infoCreate = env.MarketplaceService:GetProductInfo(idCreate)
+    Window:Section({
+        text = infoCreate.Name,
+        image = `rbxthumb://type=Asset&id={idCreate}&w=420&h=420`,
+        index = i,
+        info = {
+            name = infoCreate.Name,
+            image = `rbxthumb://type=Asset&id={idCreate}&w=420&h=420`,
+            template = (key == "website" and "Last Web UGC") or (key == "free" and "Last Ingame UGC") or "Last Paid UGC"
+        }
+    })
+end
+
+Notify.OnClientEvent:Connect(function(...)
+    if not config.Rolimons.AutoSearch then return end
+
+    local args = {...}
+    local AssetId = args[1]
+    local data = args[2]
+    
+    if not AssetId or not data then return end
+    
+    local location_type = data.location_type
+    local detection_time = data.detection_time
+    local price = data.price
+    local notifyName = data.name
+
+    local canBuy = (location_type == 1 or location_type == 5 or location_type == 7)
+    local isPaid = (price and price > 1)
+
+    if canBuy and price == 0 then
+        local success, itemData = pcall(function()
+            return _payload(AssetId)
+        end)
+        
+        if not success or not itemData then
+            print("Failed to get item data")
+            return
+        end
+        
+        task.spawn(function()
+            local buyResultRaw = _BUY(AssetId)
+
+            if buyResultRaw and buyResultRaw.purchased then
+                local Quantity = itemData.metadata.Quantity or 1
+                local Remaining = itemData.metadata.Remaining or 0
+                
+                local Serial, RemainingStock = getSerial(AssetId, Quantity, Remaining)
+                
+                if Serial then
+                    Notification:Notify(
+                        {Title = notifyName, Description = `New Item Purchased: \nSerial: #{Serial}\nStock Left: {RemainingStock}`},
+                        {OutlineColor = Color3.fromRGB(0, 0, 255), Time = 120, Type = "image"},
+                        {Image = `rbxthumb://type=Asset&id={AssetId}&w=420&h=420`, ImageColor = Color3.fromRGB(255, 255, 255)}
+                    )
+
+                    if WebhookUrl then
+                        SendWebhookUrl(WebhookUrl, false, true, true, Serial, RemainingStock, AssetId)
+                    end
+                end
+            else
+                local errorTable = {
+                    ["NotForSale"] = "Item offsale",
+                    ["QuantityExhausted"] = "Already sold out",
+                    ["QuantityLimitExceeded"] = "Reached Quantity Limit",
+                    ["MissingPurchaseAuthToken"] = "PurchaseAuthToken not found",
+                    ["InvalidSaleLocation"] = "Invalid Sale Location",
+                    ["GameVerificationError"] = "You not in game?",
+                    ["PriceMismatch"] = "Price changed",
+                    ["InsufficientFunds"] = "Not enough Robux",
+                    ["AlreadyOwned"] = "Already owned",
+                    ["Unauthorized"] = "Auth failed",
+                    ["TooManyRequests"] = "Rate limited",
+                    ["Flooded: purchase requests exceeds limit"] = "Hold on! you reached purchase limit",
+                    ["ItemNotFound"] = "Item not found?",
+                    ["InvalidParameter"] = "Invalid parameters",
+                    ["PurchaseNotAllowed"] = "Purchase blocked (PIN/age)",
+                    ["Unavailable"] = "Item unavailable"
+                }
+
+                local rawError = (buyResultRaw and buyResultRaw.errorMessage) or "Unknown error"
+                local errorMsg = errorTable[rawError] or rawError
+
+                Notification:Notify(
+                    {Title = notifyName, Description = errorMsg},
+                    {OutlineColor = Color3.fromRGB(0, 0, 255), Time = 60, Type = "image"},
+                    {Image = `rbxthumb://type=Asset&id={AssetId}&w=420&h=420`, ImageColor = Color3.fromRGB(255, 255, 255)}
+                )
+
+                if WebhookFails then
+                    SendWebhookFails(WebhookFails, errorMsg, AssetId)
+                end
+            end
+        end)
+    end
+
+    local websiteId, ingameId, paidId = nil, nil, nil
+
+    if canBuy and not isPaid then
+        websiteId = AssetId
+    elseif isPaid then
+        paidId = AssetId
+    else
+        ingameId = AssetId
+    end
+
+    getgenv().lastIds = getgenv().lastIds or {website = cache.website, ingame = cache.free, paid = cache.paid}
+    if websiteId then getgenv().lastIds.website = websiteId end
+    if ingameId then getgenv().lastIds.ingame = ingameId end
+    if paidId then getgenv().lastIds.paid = paidId end
+
+    local names = {}
+    for key, id in pairs(getgenv().lastIds) do
+        if (key == "website" and websiteId) or (key == "ingame" and ingameId) or (key == "paid" and paidId) then
+            names[key] = notifyName
+        end
+    end
+
+    pcall(function()
+        Window:Update({
+            [1] = {text = names.website, image = `rbxthumb://type=Asset&id={getgenv().lastIds.website}&w=420&h=420`},
+            [2] = {text = names.ingame, image = `rbxthumb://type=Asset&id={getgenv().lastIds.ingame}&w=420&h=420`},
+            [3] = {text = names.paid, image = `rbxthumb://type=Asset&id={getgenv().lastIds.paid}&w=420&h=420`}
+        })
+    end)
+
+    pcall(function()
+        if Window.sectionsList and #Window.sectionsList == 3 then
+            Window.sectionsList[1].obj:UpdateInfo({
+                name = names.website,
+                image = `rbxthumb://type=Asset&id={getgenv().lastIds.website}&w=420&h=420`,
+                template = "Last Web UGC"
+            })
+            Window.sectionsList[2].obj:UpdateInfo({
+                name = names.ingame,
+                image = `rbxthumb://type=Asset&id={getgenv().lastIds.ingame}&w=420&h=420`,
+                template = "Last Ingame UGC"
+            })
+            Window.sectionsList[3].obj:UpdateInfo({
+                name = names.paid,
+                image = `rbxthumb://type=Asset&id={getgenv().lastIds.paid}&w=420&h=420`,
+                template = "Last Paid UGC"
+            })
+        end
+    end)
+end)
+
+
+if config.Rolimons.BlockNotify then
+    for i,v in pairs(LocalPlayer.PlayerGui.main.BotLeft.NotifHolder:GetChildren()) do
+        v:Destroy()
+    end
+
+    for _, v in pairs(getconnections(Notify.OnClientEvent)) do
+        if v.Function and debug.getinfo(v.Function).name == "NOTIFY" then
+            hookfunction(v.Function, function(...) return end) break
+        end
+    end
+end
+
+Notification:Notify(
+    {Title = "auto-search", Description = `Connected in as: {purchasedName}`},
+    {OutlineColor = Color3.fromRGB(0, 0, 255), Time = 30, Type = "image"},
+    {Image = "http://www.roblox.com/asset/?id=17860774372", ImageColor = Color3.fromRGB(255, 255, 255)}
+)
