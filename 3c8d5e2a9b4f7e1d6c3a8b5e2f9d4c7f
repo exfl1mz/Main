@@ -180,6 +180,57 @@ local defaults; do
             end
             return c
         end
+
+        function types:Tab(name, image)
+            local order = self:GetOrder();
+            local determinedSize = UDim2.new(1, 0, 0, 30)
+            local determinedPos = UDim2.new(0, 35, 0, 0);
+            local secondarySize = UDim2.new(1, -65, 1, 0);
+                                
+            if order == 0 then
+                determinedSize = UDim2.new(1, 0, 0, 30)
+                determinedPos = UDim2.new(0, 35, 0, 0);
+                secondarySize = UDim2.new(1, -65, 1, 0)
+            end
+
+            local check = library:Create('Frame', {
+                Name = 'Section';
+                BackgroundTransparency = 0;
+                BackgroundColor3 = library.options.sectncolor;
+                Size = determinedSize;
+                BorderSizePixel = 0;
+                LayoutOrder = order;
+                ClipsDescendants = false;
+                library:Create('ImageLabel', {
+                    Name = 'Icon';
+                    BackgroundTransparency = 1;
+                    Image = image;
+                    Size = UDim2.new(0, 25, 0, 25);
+                    Position = UDim2.new(0, 5, 0, 2.5);
+                    ScaleType = Enum.ScaleType.Fit;
+                });
+                library:Create('TextLabel', {
+                    Name = 'section_lbl';
+                    Text = name;
+                    BackgroundTransparency = 1;
+                    BorderSizePixel = 0;
+                    TextColor3 = library.options.textcolor;
+                    Position = determinedPos;
+                    Size     = secondarySize;
+                    TextXAlignment = Enum.TextXAlignment.Left;
+                    TextYAlignment = Enum.TextYAlignment.Center;
+                    TextWrapped = true;
+                    TextScaled = true;
+                    Font = library.options.font;
+                    TextSize = library.options.fontsize;
+                    TextStrokeTransparency = library.options.textstroke;
+                    TextStrokeColor3 = library.options.strokecolor;
+                });
+                Parent = self.container;
+            });
+
+            self:Resize();
+        end
             
         function types:Section(options)
             local text = options.text or options.name or "Unknown"
