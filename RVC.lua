@@ -19,7 +19,7 @@ if s:find("httplog") or s:find("sandbox") then while true do error("anti env log
 if not game:IsLoaded() then game.Loaded:Wait() end
 
 local NotificationHolder = loadstring(game:HttpGet("https://raw.githubusercontent.com/exfl1mz/Main/main/Module.lua"))()
-local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/exfl1mz/Main/refs/Client.lua"))()
+local Notification = loadstring(game:HttpGet("https://raw.githubusercontent.com/exfl1mz/Main/main/Client.lua"))()
 
 if getgenv().RVCLoader then
     Notification:Notify(
