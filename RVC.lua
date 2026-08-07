@@ -168,6 +168,7 @@ if L then Merge(Settings, L) end
 local Players: Players = game:GetService("Players")
 local LocalPlayer: Player = Players.LocalPlayer
 local Workspace: Workspace = game:GetService("Workspace")
+local Character: Model? = LocalPlayer.Character
 
 local RunService: RunService = cloneref(game:GetService("RunService"))
 local UserInputService: UserInputService = cloneref(game:GetService("UserInputService"))
