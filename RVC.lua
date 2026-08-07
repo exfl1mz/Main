@@ -77,7 +77,7 @@ type StyleEntry = {
     Equip: string
 }
 
-local Settings: SettingsTable = {
+getgenv().Settings = {
     Main = {
         RagdollTime = false,
         Invisible = false,
@@ -103,7 +103,9 @@ local Settings: SettingsTable = {
         Carpet = false,
         CarpetSpeed = 50
     }
-}
+} :: SettingsTable
+
+local Settings: SettingsTable = getgenv().Settings
 
 local File: string = "RVC.json"
 local HttpService: HttpService = game:GetService("HttpService")
@@ -198,19 +200,20 @@ local function ChangeLabel(Name: string): TextLabel?
 end
 
 local function forceVisible(player: Player): ()
-    local Character: Model? = LocalPlayer.Character
-    if Character and Character:GetAttribute("IsInvisible") then
-        Character:SetAttribute("IsInvisible", false)
+    local playerCharacter: Model? = player.Character
+
+    if playerCharacter and playerCharacter:GetAttribute("IsInvisible") then
+        playerCharacter:SetAttribute("IsInvisible", false)
     end
 
     player:SetAttribute("show_country", true)
     player:SetAttribute("ShowIconContainers", true)
     player:SetAttribute("ShowNicknames", true)
 
-    if Character then
-        Character:GetAttributeChangedSignal("IsInvisible"):Connect(function()
-            if Character:GetAttribute("IsInvisible") then
-                Character:SetAttribute("IsInvisible", false)
+    if playerCharacter then
+        playerCharacter:GetAttributeChangedSignal("IsInvisible"):Connect(function()
+            if playerCharacter:GetAttribute("IsInvisible") then
+                playerCharacter:SetAttribute("IsInvisible", false)
             end
         end)
     end
@@ -693,13 +696,17 @@ for _, v in ipairs(stylesList) do
 end
 
 for _, v in ipairs(Players:GetPlayers()) do
-	forceVisible(v)
-	v.CharacterAdded:Connect(forceVisible)
+    forceVisible(v)
+    v.CharacterAdded:Connect(function()
+        task.wait(.5); forceVisible(v)
+    end)
 end
 
 Players.PlayerAdded:Connect(function(v: Player)
-	forceVisible(v)
-	v.CharacterAdded:Connect(forceVisible)
+    forceVisible(v)
+    v.CharacterAdded:Connect(function()
+        task.wait(.5); forceVisible(v)
+    end)
 end)
 
 LocalPlayer.Idled:Connect(function()
