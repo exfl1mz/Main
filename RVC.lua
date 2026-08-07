@@ -577,6 +577,7 @@ local MiscR = Misc:Section({Title = "Power", Side = "r"})
 MiscL:Toggle({Title = "Enable Player Speed", Desc = "", Value = Settings.Misc.Speed, Callback = function(state)
     task.spawn(function()
         Settings.Misc.Speed = state; SaveSettings(Settings)
+        local Humanoid: Humanoid? = Character:FindFirstChildOfClass("Humanoid") :: Humanoid?
         while true do
             if not Settings.Misc.Speed then Humanoid.WalkSpeed = Settings.Misc.SpeedBasic return end
             Humanoid.WalkSpeed = Settings.Misc.CustomSpeed
